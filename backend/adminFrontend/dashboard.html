@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Micha Website</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container dashboard-container">
+        <h2>Welcome, <span id="adminName">Admin</span>!</h2>
+        <p>You have successfully logged in to the admin dashboard.</p>
+
+        <!-- Add Product Form -->
+        <div
+            style="margin-top: 2rem; text-align: left; background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <h3>Add New Product</h3>
+            <form id="addProductForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title">Product Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <input type="text" id="category" name="category" required>
+                </div>
+                <div class="form-group">
+                    <label for="mrp">MRP</label>
+                    <input type="number" id="mrp" name="mrp" required>
+                </div>
+                <div class="form-group">
+                    <label for="discountedPrice">Discounted Price</label>
+                    <input type="number" id="discountedPrice" name="discountedPrice" required>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags (comma separated)</label>
+                    <input type="text" id="tags" name="tags" placeholder="tag1, tag2">
+                </div>
+                <div class="form-group">
+                    <label for="images">Product Images (Max 10)</label>
+                    <input type="file" id="images" name="images" multiple accept="image/*" required>
+                </div>
+                <button type="submit">Add Product</button>
+            </form>
+            <div id="productMessage" class="message"></div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <a href="products.html"
+                style="display:inline-block; padding: 0.75rem 1.5rem; background-color: var(--secondary-color); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">View
+                All Products</a>
+        </div>
+
+        <button id="logoutBtn" style="margin-top: 2rem; background-color: var(--error-color);">Logout</button>
+    </div>
+
+    <script>
+        const API_BASE = `http://${window.location.hostname}:3000/api/admin`;
+        const PRODUCT_API = `http://${window.location.hostname}:3000/api/products`;
+
+        // Check authentication via API
+        fetch(`${API_BASE}/check-auth`, { credentials: 'include' })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Not authenticated');
+                }
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('adminName').textContent = data.user.username;
+            })
+            .catch(() => {
+                window.location.href = 'login.html';
+            });
+
+        // Handle Add Product
+        const addProductForm = document.getElementById('addProductForm');
+        const productMessage = document.getElementById('productMessage');
+
+        addProductForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            productMessage.style.display = 'none';
+            productMessage.className = 'message';
+
+            const formData = new FormData(addProductForm);
+
+            try {
+                const response = await fetch(`${PRODUCT_API}/add`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData // Send as FormData for file upload
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    productMessage.textContent = 'Product added successfully!';
+                    productMessage.classList.add('success');
+                    productMessage.style.display = 'block';
+                    addProductForm.reset();
+                } else {
+                    productMessage.textContent = result.message || 'Error adding product';
+                    productMessage.classList.add('error');
+                    productMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error(error);
+                productMessage.textContent = 'Network error occurred.';
+                productMessage.classList.add('error');
+                productMessage.style.display = 'block';
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await fetch(`${API_BASE}/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
