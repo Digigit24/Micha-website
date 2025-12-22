@@ -1,0 +1,186 @@
+/* File: src/index.css */
+
+@import "tailwindcss";
+
+/* Optional: fonts (works without, but looks better) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap");
+
+/* Your theme tokens (Tailwind v4) */
+@theme {
+    --color-porcelain: #f7f4ee;
+    --color-ivory: #d9d0bd;
+    --color-sand: #cec2a3;
+    --color-champagne: #c6ba9e;
+    --color-gold-soft: #b5a68a;
+    --color-gold-primary: #7c6338;
+
+    --color-bg-primary: var(--color-porcelain);
+    --color-bg-secondary: var(--color-ivory);
+    --color-bg-tertiary: var(--color-sand);
+    --color-bg-card: rgba(217, 208, 189, 0.6);
+    --color-bg-overlay: rgba(44, 42, 38, 0.35);
+
+    --color-text-primary: #2c2a26;
+    --color-text-secondary: #6e6656;
+    --color-text-muted: #9c927d;
+    --color-text-inverse: var(--color-porcelain);
+
+    --color-accent-primary: var(--color-gold-primary);
+    --color-accent-soft: var(--color-gold-soft);
+
+    --color-border-light: rgba(124, 99, 56, 0.18);
+    --color-border-medium: rgba(124, 99, 56, 0.35);
+
+    --shadow-sm: 0 4px 12px rgba(44, 42, 38, 0.08);
+    --shadow-md: 0 10px 30px rgba(124, 99, 56, 0.25);
+    --shadow-lg: 0 20px 60px rgba(124, 99, 56, 0.35);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    --font-heading: "Playfair Display", "Cormorant Garamond", serif;
+    --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+    --tracking-tight: -0.02em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.08em;
+}
+
+:root {
+    --transition-fast: 150ms ease;
+    --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms ease;
+
+    /* Fix for your .button-primary variables */
+    --btn-primary-bg: var(--color-accent-primary);
+    --btn-primary-bg-hover: #6b5530;
+    --btn-primary-text: var(--color-text-inverse);
+}
+
+/* Dark mode hook (toggle by adding 'dark' class on <html>) */
+html.dark {
+    --color-bg-primary: #121212;
+    --color-bg-secondary: #1e1e1e;
+    --color-bg-tertiary: #2a2a2a;
+    --color-bg-card: #1e1e1e;
+
+    --color-text-primary: #f7f4ee;
+    --color-text-secondary: #b5a68a;
+    --color-text-muted: #7c6338;
+
+    --color-border-light: rgba(255, 255, 255, 0.08);
+    --color-border-medium: rgba(255, 255, 255, 0.15);
+}
+
+@layer base {
+    body {
+        background: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        font-family: var(--font-body);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1,
+    h2,
+    h3 {
+        font-family: var(--font-heading);
+        letter-spacing: var(--tracking-tight);
+    }
+
+    /* sensible defaults */
+    button {
+        transition: var(--transition-base);
+    }
+}
+
+/* small reusable styling helpers */
+@layer components {
+    .page {
+        @apply mx-auto w-full max-w-6xl px-4 py-5;
+    }
+
+    .card {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        @apply p-4 backdrop-blur;
+    }
+
+    .chip {
+        border: 1px solid var(--color-border-light);
+        border-radius: 999px;
+        @apply px-3 py-1 text-xs;
+    }
+
+    .input {
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+        @apply w-full px-3 py-2 outline-none;
+    }
+
+    .textarea {
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+        @apply w-full px-3 py-2 outline-none min-h-24;
+    }
+
+    .button-primary {
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-text);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        @apply inline-flex items-center justify-center px-3 py-2 font-medium;
+    }
+
+    .button-primary:hover {
+        background: var(--btn-primary-bg-hover);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .button-ghost {
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+        @apply inline-flex items-center justify-center px-3 py-2 font-medium;
+    }
+
+    .button-ghost:hover {
+        border-color: var(--color-border-medium);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .table {
+        @apply w-full border-separate border-spacing-0 overflow-hidden;
+    }
+
+    .table th {
+        @apply text-left text-xs font-semibold uppercase tracking-wide;
+        color: var(--color-text-muted);
+        border-bottom: 1px solid var(--color-border-light);
+        @apply p-3;
+    }
+
+    .table td {
+        border-bottom: 1px solid var(--color-border-light);
+        @apply p-3 align-top;
+    }
+
+    .aspect-w-16 {
+        position: relative;
+        padding-bottom: 56.25%;
+        /* 16:9 */
+    }
+
+    .aspect-w-16>* {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}

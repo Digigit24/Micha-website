@@ -22,7 +22,6 @@ export default function AppointmentCreate() {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    // You can map this to your backend fields as needed.
     const payload = {
       patient_name: form.patient_name,
       date: form.date,
@@ -33,49 +32,50 @@ export default function AppointmentCreate() {
     try {
       const created = await createMutation.mutateAsync(payload);
       const id = created?.id ?? created?._id;
-
-      // If API returns id, jump to details; otherwise go list
       if (id) navigate(`/appointments/${id}`);
       else navigate("/appointments");
-    } catch {
-      // errors already logged in hook
-    }
+    } catch {}
   };
 
   return (
     <div className="page">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h2>Create appointment</h2>
-        <Link to="/appointments"><button>Back</button></Link>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-2xl">Create appointment</h2>
+        <Link to="/appointments" className="button-ghost">Back</Link>
       </div>
 
-      <form onSubmit={onSubmit} className="card" style={{ marginTop: 12, maxWidth: 520 }}>
-        <label className="label">Patient name</label>
-        <input value={form.patient_name} onChange={onChange("patient_name")} placeholder="John Doe" />
+      <form onSubmit={onSubmit} className="card mt-4 max-w-xl">
+        <label className="text-sm font-semibold">Patient name</label>
+        <input className="input mt-2" value={form.patient_name} onChange={onChange("patient_name")} placeholder="John Doe" />
 
-        <label className="label">Date</label>
-        <input value={form.date} onChange={onChange("date")} type="date" />
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div>
+            <label className="text-sm font-semibold">Date</label>
+            <input className="input mt-2" value={form.date} onChange={onChange("date")} type="date" />
+          </div>
 
-        <label className="label">Time</label>
-        <input value={form.time} onChange={onChange("time")} type="time" />
+          <div>
+            <label className="text-sm font-semibold">Time</label>
+            <input className="input mt-2" value={form.time} onChange={onChange("time")} type="time" />
+          </div>
+        </div>
 
-        <label className="label">Notes</label>
-        <textarea value={form.notes} onChange={onChange("notes")} placeholder="Optional notes..." />
+        <label className="mt-4 block text-sm font-semibold">Notes</label>
+        <textarea className="textarea mt-2" value={form.notes} onChange={onChange("notes")} placeholder="Optional notes..." />
 
-        <div className="row" style={{ marginTop: 12 }}>
-          <button type="submit" disabled={createMutation.isPending}>
+        <div className="mt-4 flex gap-2">
+          <button className="button-primary" type="submit" disabled={createMutation.isPending}>
             {createMutation.isPending ? "Creating..." : "Create"}
           </button>
+          <Link to="/appointments" className="button-ghost">Cancel</Link>
         </div>
 
         {createMutation.isPending ? (
-          <div style={{ marginTop: 10 }}><Loading label="Creating appointment..." /></div>
+          <div className="mt-3"><Loading label="Creating appointment..." /></div>
         ) : null}
 
         {createMutation.isError ? (
-          <div style={{ marginTop: 10 }}>
-            <ErrorState title="Create failed" error={createMutation.error} />
-          </div>
+          <div className="mt-3"><ErrorState title="Create failed" error={createMutation.error} /></div>
         ) : null}
       </form>
     </div>

@@ -1,58 +1,65 @@
-// File: src/pages/Login.jsx
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setToken, clearToken, getToken } from "../utils/storage";
+import { setToken } from "../utils/storage";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [token, setTokenInput] = useState(getToken() || "");
+    const navigate = useNavigate();
+    const [form, setForm] = useState({ email: "", password: "" });
 
-  const onSave = (e) => {
-    e.preventDefault();
-    const t = token.trim();
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
-    if (!t) {
-      clearToken();
-      alert("Token cleared. You'll be treated as logged out.");
-      return;
-    }
+    const onLogin = (e) => {
+        e.preventDefault();
+        // No checks as requested
+        // Set a dummy token to satisfy the ProtectedRoute check
+        setToken("dummy-auth-token");
+        navigate("/admin");
+    };
 
-    setToken(t);
-    alert("Token saved.");
-    navigate("/appointments");
-  };
+    return (
+        <div className="page">
+            <div className="flex items-center justify-between gap-3 mb-6">
+                <h2 className="text-2xl font-bold">Admin Login</h2>
+                <button className="button-ghost" onClick={() => navigate("/")}>
+                    Back to Store
+                </button>
+            </div>
 
-  return (
-    <div className="page">
-      <h2>Login</h2>
-      <p style={{ marginTop: 6, opacity: 0.8 }}>
-        Paste your access token. If your backend supports unauthenticated access, you can leave it empty.
-      </p>
+            <div className="card max-w-sm mx-auto mt-10 p-8">
+                <form onSubmit={onLogin} className="flex flex-col gap-4">
+                    <div>
+                        <label className="text-sm font-semibold block mb-1">Email</label>
+                        <input
+                            name="email"
+                            type="email"
+                            className="input"
+                            value={form.email}
+                            onChange={handleChange}
+                            placeholder="admin@example.com"
+                            required
+                        />
+                    </div>
 
-      <form onSubmit={onSave} className="card" style={{ marginTop: 12 }}>
-        <label style={{ display: "block", fontWeight: 600 }}>Access Token</label>
-        <input
-          value={token}
-          onChange={(e) => setTokenInput(e.target.value)}
-          placeholder="access_token"
-          style={{ width: "100%", marginTop: 8 }}
-        />
+                    <div>
+                        <label className="text-sm font-semibold block mb-1">Password</label>
+                        <input
+                            name="password"
+                            type="password"
+                            className="input"
+                            value={form.password}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
 
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <button type="submit">Save</button>
-          <button
-            type="button"
-            onClick={() => {
-              clearToken();
-              setTokenInput("");
-              alert("Token removed.");
-            }}
-          >
-            Clear
-          </button>
+                    <button className="button-primary mt-2 w-full" type="submit">
+                        Login
+                    </button>
+                </form>
+            </div>
         </div>
-      </form>
-    </div>
-  );
+    );
 }

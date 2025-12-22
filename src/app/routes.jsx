@@ -1,16 +1,47 @@
-// File: src/app/routes.jsx
-
 import { createBrowserRouter } from "react-router-dom";
 import Login from "../pages/Login";
-import AppointmentsList from "../pages/appointments/AppointmentsList";
-import AppointmentCreate from "../pages/appointments/AppointmentCreate";
-import AppointmentDetails from "../pages/appointments/AppointmentDetails";
+import LandingPage from "../pages/shop/LandingPage";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import ProductEditor from "../pages/admin/ProductEditor";
+import { getToken } from "../utils/storage";
+import { Navigate } from "react-router-dom";
+
+// Simple Protected Route wrapper
+const ProtectedRoute = ({ children }) => {
+    const token = getToken();
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+    return children;
+};
 
 export const router = createBrowserRouter([
-  { path: "/", element: <AppointmentsList /> },
-  { path: "/login", element: <Login /> },
+    { path: "/", element: <LandingPage /> },
+    { path: "/login", element: <Login /> },
 
-  { path: "/appointments", element: <AppointmentsList /> },
-  { path: "/appointments/new", element: <AppointmentCreate /> },
-  { path: "/appointments/:id", element: <AppointmentDetails /> },
+    // Admin Routes
+    {
+        path: "/admin",
+        element: (
+            <ProtectedRoute>
+                <AdminDashboard />
+            </ProtectedRoute>
+        )
+    },
+    {
+        path: "/admin/products/new",
+        element: (
+            <ProtectedRoute>
+                <ProductEditor />
+            </ProtectedRoute>
+        )
+    },
+    {
+        path: "/admin/products/:id",
+        element: (
+            <ProtectedRoute>
+                <ProductEditor />
+            </ProtectedRoute>
+        )
+    },
 ]);

@@ -5,23 +5,20 @@ export default function ConfirmButton({
   confirmText = "Are you sure?",
   onConfirm,
   disabled,
-  style,
+  variant = "ghost", // "ghost" | "primary"
   title,
 }) {
+  const cls = variant === "primary" ? "button-primary" : "button-ghost";
+
   return (
     <button
       title={title}
       disabled={disabled}
+      className={`${cls} ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
       onClick={() => {
         if (disabled) return;
         const ok = window.confirm(confirmText);
         if (ok) onConfirm?.();
-      }}
-      style={{
-        padding: "7px 10px",
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        ...style,
       }}
     >
       {children}

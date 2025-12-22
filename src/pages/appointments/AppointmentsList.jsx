@@ -14,6 +14,10 @@ import { useUpcomingAppointments } from "../../hooks/appointments/useUpcomingApp
 
 import { safeText, formatDate } from "../../utils/formatters";
 
+function toggleTheme() {
+  document.documentElement.classList.toggle("dark");
+}
+
 export default function AppointmentsList() {
   const navigate = useNavigate();
 
@@ -25,7 +29,10 @@ export default function AppointmentsList() {
   const cancelMutation = useCancelAppointment();
   const actions = useAppointmentActions();
 
-  const items = Array.isArray(appointmentsQuery.data) ? appointmentsQuery.data : (appointmentsQuery.data?.results || []);
+  const items = Array.isArray(appointmentsQuery.data)
+    ? appointmentsQuery.data
+    : appointmentsQuery.data?.results || [];
+
   const stats = statsQuery.data || null;
 
   const isBusy =
@@ -35,7 +42,8 @@ export default function AppointmentsList() {
     actions.complete.isPending;
 
   if (appointmentsQuery.isLoading) return <div className="page"><Loading label="Loading appointments..." /></div>;
-  if (appointmentsQuery.isError)
+
+  if (appointmentsQuery.isError) {
     return (
       <div className="page">
         <ErrorState
@@ -45,65 +53,76 @@ export default function AppointmentsList() {
         />
       </div>
     );
+  }
 
   return (
     <div className="page">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h2>Appointments</h2>
-        <div className="row">
-          <Link to="/appointments/new">
-            <button>Create</button>
-          </Link>
-          <button onClick={() => navigate("/login")}>Login</button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl">Appointments</h2>
+          <div className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+            Clean UI. Real actions. No drama.
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link to="/appointments/new" className="button-primary">Create</Link>
+          <button className="button-ghost" onClick={() => navigate("/login")}>Login</button>
+          <button className="button-ghost" onClick={toggleTheme}>Toggle theme</button>
         </div>
       </div>
 
-      <div className="grid" style={{ marginTop: 12 }}>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div className="card">
-          <div style={{ fontWeight: 700 }}>Statistics</div>
+          <div className="flex items-center justify-between">
+            <div className="font-semibold">Statistics</div>
+            <span className="chip">cached</span>
+          </div>
           {statsQuery.isLoading ? (
-            <div style={{ marginTop: 8, opacity: 0.8 }}>Loading...</div>
+            <div className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>Loading...</div>
           ) : statsQuery.isError ? (
-            <div style={{ marginTop: 8, opacity: 0.8 }}>Failed to load</div>
+            <div className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>Failed to load</div>
           ) : (
-            <pre style={{ marginTop: 8 }}>{safeText(stats)}</pre>
+            <pre className="mt-3 text-xs whitespace-pre-wrap">{safeText(stats)}</pre>
           )}
         </div>
 
         <div className="card">
-          <div style={{ fontWeight: 700 }}>Today</div>
-          {todayQuery.isLoading ? (
-            <div style={{ marginTop: 8, opacity: 0.8 }}>Loading...</div>
-          ) : todayQuery.isError ? (
-            <div style={{ marginTop: 8, opacity: 0.8 }}>Failed to load</div>
-          ) : (
-            <div style={{ marginTop: 8, opacity: 0.85 }}>
-              Count: {Array.isArray(todayQuery.data) ? todayQuery.data.length : (todayQuery.data?.results?.length || 0)}
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <div className="font-semibold">Today</div>
+            <span className="chip">quick view</span>
+          </div>
+          <div className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+            Count:{" "}
+            {Array.isArray(todayQuery.data)
+              ? todayQuery.data.length
+              : todayQuery.data?.results?.length || 0}
+          </div>
         </div>
 
         <div className="card">
-          <div style={{ fontWeight: 700 }}>Upcoming</div>
-          {upcomingQuery.isLoading ? (
-            <div style={{ marginTop: 8, opacity: 0.8 }}>Loading...</div>
-          ) : upcomingQuery.isError ? (
-            <div style={{ marginTop: 8, opacity: 0.8 }}>Failed to load</div>
-          ) : (
-            <div style={{ marginTop: 8, opacity: 0.85 }}>
-              Count: {Array.isArray(upcomingQuery.data) ? upcomingQuery.data.length : (upcomingQuery.data?.results?.length || 0)}
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <div className="font-semibold">Upcoming</div>
+            <span className="chip">quick view</span>
+          </div>
+          <div className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+            Count:{" "}
+            {Array.isArray(upcomingQuery.data)
+              ? upcomingQuery.data.length
+              : upcomingQuery.data?.results?.length || 0}
+          </div>
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 12 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <div style={{ fontWeight: 700 }}>All appointments</div>
-          <button onClick={() => appointmentsQuery.refetch()}>Refresh</button>
+      <div className="card mt-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="font-semibold">All appointments</div>
+          <button className="button-ghost" onClick={() => appointmentsQuery.refetch()}>
+            Refresh
+          </button>
         </div>
 
-        <div style={{ overflowX: "auto", marginTop: 10 }}>
+        <div className="mt-3 overflow-x-auto">
           <table className="table">
             <thead>
               <tr>
@@ -111,13 +130,14 @@ export default function AppointmentsList() {
                 <th>Patient</th>
                 <th>Date</th>
                 <th>Status</th>
-                <th style={{ width: 520 }}>Actions</th>
+                <th className="w-[560px]">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ opacity: 0.7 }}>
+                  <td colSpan="5" className="py-6 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                     No appointments found.
                   </td>
                 </tr>
@@ -131,10 +151,8 @@ export default function AppointmentsList() {
                       <td>{formatDate(a?.date || a?.scheduled_at || a?.created_at)}</td>
                       <td>{safeText(a?.status)}</td>
                       <td>
-                        <div className="row" style={{ flexWrap: "wrap" }}>
-                          <Link to={`/appointments/${id}`}>
-                            <button>View</button>
-                          </Link>
+                        <div className="flex flex-wrap gap-2">
+                          <Link className="button-ghost" to={`/appointments/${id}`}>View</Link>
 
                           <ConfirmButton
                             disabled={isBusy || !id}
@@ -169,9 +187,12 @@ export default function AppointmentsList() {
                           </ConfirmButton>
                         </div>
 
-                        {(cancelMutation.isError || actions.checkIn.isError || actions.start.isError || actions.complete.isError) ? (
-                          <div style={{ marginTop: 6, fontSize: 12, opacity: 0.8 }}>
-                            One of the actions failed. Check console for details.
+                        {(cancelMutation.isError ||
+                          actions.checkIn.isError ||
+                          actions.start.isError ||
+                          actions.complete.isError) ? (
+                          <div className="mt-2 text-xs" style={{ color: "var(--color-text-secondary)" }}>
+                            An action failed. Check console logs.
                           </div>
                         ) : null}
                       </td>
@@ -182,8 +203,6 @@ export default function AppointmentsList() {
             </tbody>
           </table>
         </div>
-
-        {cancelMutation.isPending ? <div style={{ marginTop: 10 }}>Cancelling...</div> : null}
       </div>
     </div>
   );

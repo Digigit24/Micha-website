@@ -11,7 +11,7 @@ import { useCancelAppointment } from "../../hooks/appointments/useCancelAppointm
 import { useAppointmentActions } from "../../hooks/appointments/useAppointmentActions";
 
 import { safeText, formatDate } from "../../utils/formatters";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function AppointmentDetails() {
   const { id } = useParams();
@@ -26,7 +26,6 @@ export default function AppointmentDetails() {
   useEffect(() => {
     const a = detailsQuery.data;
     if (!a) return;
-
     setEdit({
       patient_name: a?.patient_name || a?.patient || a?.name || "",
       notes: a?.notes || "",
@@ -42,7 +41,8 @@ export default function AppointmentDetails() {
     actions.complete.isPending;
 
   if (detailsQuery.isLoading) return <div className="page"><Loading label="Loading appointment..." /></div>;
-  if (detailsQuery.isError)
+
+  if (detailsQuery.isError) {
     return (
       <div className="page">
         <ErrorState
@@ -52,18 +52,17 @@ export default function AppointmentDetails() {
         />
       </div>
     );
+  }
 
   const a = detailsQuery.data || {};
   const apptId = a?.id ?? a?._id ?? id;
 
   const onSavePut = async () => {
-    // PUT typically expects full payload. Adjust fields to your backend.
     const payload = {
       patient_name: edit.patient_name,
       notes: edit.notes,
       status: edit.status,
     };
-
     try {
       await updateMutation.mutateAsync({ id: apptId, payload, mode: "put" });
       alert("Saved (PUT).");
@@ -71,11 +70,7 @@ export default function AppointmentDetails() {
   };
 
   const onSavePatch = async () => {
-    // PATCH can send partial updates
-    const payload = {
-      notes: edit.notes,
-    };
-
+    const payload = { notes: edit.notes };
     try {
       await updateMutation.mutateAsync({ id: apptId, payload, mode: "patch" });
       alert("Saved (PATCH).");
@@ -84,20 +79,20 @@ export default function AppointmentDetails() {
 
   return (
     <div className="page">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h2>Appointment details</h2>
-        <Link to="/appointments"><button>Back</button></Link>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-2xl">Appointment details</h2>
+        <Link to="/appointments" className="button-ghost">Back</Link>
       </div>
 
-      <div className="card" style={{ marginTop: 12 }}>
-        <div style={{ display: "grid", gap: 6 }}>
-          <div><strong>ID:</strong> {safeText(apptId)}</div>
-          <div><strong>Patient:</strong> {safeText(a?.patient_name || a?.patient || a?.name)}</div>
-          <div><strong>Date:</strong> {formatDate(a?.date || a?.scheduled_at || a?.created_at)}</div>
-          <div><strong>Status:</strong> {safeText(a?.status)}</div>
+      <div className="card mt-4">
+        <div className="grid gap-2 md:grid-cols-2">
+          <div><span className="text-xs uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>ID</span><div className="mt-1 font-semibold">{safeText(apptId)}</div></div>
+          <div><span className="text-xs uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>Patient</span><div className="mt-1 font-semibold">{safeText(a?.patient_name || a?.patient || a?.name)}</div></div>
+          <div><span className="text-xs uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>Date</span><div className="mt-1">{formatDate(a?.date || a?.scheduled_at || a?.created_at)}</div></div>
+          <div><span className="text-xs uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>Status</span><div className="mt-1">{safeText(a?.status)}</div></div>
         </div>
 
-        <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
+        <div className="mt-4 flex flex-wrap gap-2">
           <ConfirmButton disabled={isBusy} confirmText="Cancel this appointment?" onConfirm={() => cancelMutation.mutate(apptId)}>
             Cancel
           </ConfirmButton>
@@ -114,65 +109,48 @@ export default function AppointmentDetails() {
             Complete
           </ConfirmButton>
 
-          <button onClick={() => detailsQuery.refetch()} disabled={isBusy}>
+          <button className="button-ghost" onClick={() => detailsQuery.refetch()} disabled={isBusy}>
             Refresh
           </button>
         </div>
-
-        {(cancelMutation.isError || actions.checkIn.isError || actions.start.isError || actions.complete.isError) ? (
-          <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
-            An action failed. Check console for details.
-          </div>
-        ) : null}
       </div>
 
-      <div className="card" style={{ marginTop: 12, maxWidth: 680 }}>
-        <div style={{ fontWeight: 700 }}>Quick edit</div>
-        <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+      <div className="card mt-4 max-w-3xl">
+        <div className="font-semibold">Quick edit</div>
+
+        <div className="mt-3 grid gap-3">
           <div>
-            <label className="label">Patient name</label>
-            <input
-              value={edit.patient_name}
-              onChange={(e) => setEdit((p) => ({ ...p, patient_name: e.target.value }))}
-            />
+            <label className="text-sm font-semibold">Patient name</label>
+            <input className="input mt-2" value={edit.patient_name} onChange={(e) => setEdit((p) => ({ ...p, patient_name: e.target.value }))} />
           </div>
 
           <div>
-            <label className="label">Status</label>
-            <input
-              value={edit.status}
-              onChange={(e) => setEdit((p) => ({ ...p, status: e.target.value }))}
-              placeholder="e.g. scheduled / in_progress / completed"
-            />
+            <label className="text-sm font-semibold">Status</label>
+            <input className="input mt-2" value={edit.status} onChange={(e) => setEdit((p) => ({ ...p, status: e.target.value }))} placeholder="scheduled / in_progress / completed" />
           </div>
 
           <div>
-            <label className="label">Notes</label>
-            <textarea
-              value={edit.notes}
-              onChange={(e) => setEdit((p) => ({ ...p, notes: e.target.value }))}
-            />
+            <label className="text-sm font-semibold">Notes</label>
+            <textarea className="textarea mt-2" value={edit.notes} onChange={(e) => setEdit((p) => ({ ...p, notes: e.target.value }))} />
           </div>
 
-          <div className="row" style={{ flexWrap: "wrap" }}>
-            <button onClick={onSavePut} disabled={isBusy}>
+          <div className="flex flex-wrap gap-2">
+            <button className="button-primary" onClick={onSavePut} disabled={isBusy}>
               {updateMutation.isPending ? "Saving..." : "Save (PUT)"}
             </button>
 
-            <button onClick={onSavePatch} disabled={isBusy}>
+            <button className="button-ghost" onClick={onSavePatch} disabled={isBusy}>
               {updateMutation.isPending ? "Saving..." : "Save notes (PATCH)"}
             </button>
           </div>
 
-          {updateMutation.isError ? (
-            <ErrorState title="Update failed" error={updateMutation.error} />
-          ) : null}
+          {updateMutation.isError ? <ErrorState title="Update failed" error={updateMutation.error} /> : null}
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 12 }}>
-        <div style={{ fontWeight: 700 }}>Raw JSON</div>
-        <pre style={{ marginTop: 8 }}>{safeText(a)}</pre>
+      <div className="card mt-4">
+        <div className="font-semibold">Raw JSON</div>
+        <pre className="mt-3 text-xs whitespace-pre-wrap">{safeText(a)}</pre>
       </div>
     </div>
   );
