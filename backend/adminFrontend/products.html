@@ -101,12 +101,17 @@
                         <div>
                             <span class="product-price">₹${product.discountedPrice}</span>
                             <span class="product-mrp">₹${product.mrp}</span>
+                            <span style="font-size: 0.8rem; color: green; margin-left: 5px;">(${product.discount}% off)</span>
                         </div>
                         <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">
-                            ${product.category}
+                            ${product.categories && product.categories.length ? product.categories.join(', ') : 'No Category'}
+                        </div>
+                         <div style="font-size: 0.8rem; margin-top: 0.25rem;">
+                            ${product.feature ? '<span style="color: gold;">★ Featured</span>' : ''}
+                            ${!product.available ? '<span style="color: red; margin-left: 5px;">Out of Stock</span>' : ''}
                         </div>
                         <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">
-                            Tags: ${product.tags.join(', ')}
+                            Tags: ${product.tags && product.tags.length ? product.tags.join(', ') : ''}
                         </div>
                     `;
                     grid.appendChild(card);

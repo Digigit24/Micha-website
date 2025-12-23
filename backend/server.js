@@ -53,6 +53,8 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/banners', require('./routes/bannerRoutes'));
+app.use('/api/sale-banner', require('./routes/saleBannerRoutes'));
 
 // Fallback for frontend
 app.get(/(.*)/, (req, res) => {

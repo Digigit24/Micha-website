@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Website - Banner Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* Hero Slider Styles */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            z-index: 1;
+            filter: brightness(0.7);
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: white;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .slide-desc {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .slide-btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background-color: white;
+            color: black;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.2s, background-color 0.2s;
+            animation: slideUp 0.8s ease-out 0.4s backwards;
+        }
+
+        .slide-btn:hover {
+            transform: scale(1.05);
+            background-color: #f3f4f6;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Navigation Dots */
+        .slider-dots {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .dot.active {
+            background-color: white;
+            transform: scale(1.2);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: white;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hero-section" id="heroSlider">
+        <div class="loading">Loading Amazing Offers...</div>
+    </div>
+
+    <!-- Error Message Container -->
+    <div id="errorContainer"
+        style="display: none; background-color: #fee2e2; color: #b91c1c; padding: 1rem; text-align: center; margin: 1rem;">
+    </div>
+
+    <!-- Sale Banner Section -->
+    <div id="saleBannerContainer"
+        style="display: none; background: #000; color: white; padding: 2rem; text-align: center; margin-top: 2rem;">
+        <h2 id="saleTitle" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: #fbbf24;">FLASH SALE</h2>
+        <div id="saleTimer" style="font-size: 3rem; font-weight: 700; font-family: monospace; margin: 1rem 0;">00:00:00
+        </div>
+        <img id="saleImage" src="" alt="Sale"
+            style="max-width: 100%; height: auto; border-radius: 12px; margin-bottom: 1.5rem; max-height: 400px;">
+        <br>
+        <a id="saleLink" href="#" class="slide-btn" style="background: #fbbf24; color: black;">Grab Deal</a>
+    </div>
+
+    <!-- Products Section -->
+    <div class="products-section" style="padding: 4rem 2rem; max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;">Featured Products</h2>
+        <div id="demoProductGrid"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+            <div class="loading" style="color: black;">Loading Products...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `http://${window.location.hostname}:3000/api/banners/public`;
+        const SALE_API_URL = `http://${window.location.hostname}:3000/api/sale-banner`;
+        const SERVER_BASE = `http://${window.location.hostname}:3000`;
+        const sliderContainer = document.getElementById('heroSlider');
+        let slides = [];
+        let currentSlide = 0;
+        let slideInterval;
+
+        async function initSlider() {
+            try {
+                const response = await fetch(API_URL);
+                const banners = await response.json();
+
+                if (banners.length === 0) {
+                    sliderContainer.innerHTML = '<div class="loading">No active banners available.</div>';
+                    return;
+                }
+
+                renderSlides(banners);
+                startAutoPlay();
+            } catch (error) {
+                console.error('Failed to load banners:', error);
+                sliderContainer.innerHTML = '<div class="loading">Failed to load content.</div>';
+            }
+        }
+
+        function renderSlides(banners) {
+            sliderContainer.innerHTML = '';
+
+            // Create Slides
+            banners.forEach((banner, index) => {
+                const slide = document.createElement('div');
+                slide.className = `slide ${index === 0 ? 'active' : ''}`;
+
+                const titleHtml = banner.title ? `<div class="slide-title">${banner.title}</div>` : '';
+                const descHtml = banner.description ? `<div class="slide-desc">${banner.description}</div>` : '';
+                const btnHtml = banner.link ? `<a href="${banner.link}" class="slide-btn">Shop Now</a>` : '';
+
+                slide.innerHTML = `
+                    <img src="${SERVER_BASE}${banner.imageUrl}" alt="${banner.title || 'Banner'}">
+                    <div class="slide-content">
+                        ${titleHtml}
+                        ${descHtml}
+                        ${btnHtml}
+                    </div>
+                `;
+                sliderContainer.appendChild(slide);
+            });
+
+            // Create Dots
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'slider-dots';
+            banners.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+            sliderContainer.appendChild(dotsContainer);
+
+            slides = document.querySelectorAll('.slide');
+        }
+
+        function goToSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            document.querySelectorAll('.dot')[currentSlide].classList.remove('active');
+
+            currentSlide = (n + slides.length) % slides.length;
+
+            slides[currentSlide].classList.add('active');
+            document.querySelectorAll('.dot')[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            goToSlide(currentSlide + 1);
+        }
+
+        function startAutoPlay() {
+            slideInterval = setInterval(nextSlide, 5000); // Change every 5 seconds
+        }
+
+        const PRODUCT_API_URL = `http://${window.location.hostname}:3000/api/products/all`;
+
+        // Initialize
+        initSlider();
+        initSaleBanner();
+        initProducts();
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.textContent = message;
+            errorContainer.style.display = 'block';
+            setTimeout(() => {
+                errorContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        async function initProducts() {
+            const grid = document.getElementById('demoProductGrid');
+            try {
+                const response = await fetch(PRODUCT_API_URL);
+                if (!response.ok) throw new Error('Failed to fetch products');
+
+                const products = await response.json();
+                grid.innerHTML = '';
+
+                if (products.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">No products found.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;';
+                    card.onmouseover = () => card.style.transform = 'translateY(-5px)';
+                    card.onmouseout = () => card.style.transform = 'translateY(0)';
+
+                    const imgUrl = product.images.length > 0 ? `${SERVER_BASE}${product.images[0]}` : 'https://via.placeholder.com/300';
+                    const discount = product.discount > 0 ? `<span style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">${product.discount}% OFF</span>` : '';
+
+                    card.innerHTML = `
+                        <div style="height: 250px; overflow: hidden; position: relative;">
+                            <img src="${imgUrl}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="position: absolute; top: 10px; right: 10px;">
+                                ${discount}
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${product.title}</h3>
+                            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 1rem;">
+                                <span style="font-size: 1.5rem; font-weight: 700;">₹${product.discountedPrice}</span>
+                                <span style="text-decoration: line-through; color: #9ca3af;">₹${product.mrp}</span>
+                            </div>
+                            <button style="width: 100%; padding: 0.8rem; background: black; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Add to Cart</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                grid.innerHTML = '<p style="text-align:center; color:red;">Failed to load products.</p>';
+                showError('Could not load products. Please try again later.');
+            }
+        }
+
+        async function initSaleBanner() {
+            try {
+                const response = await fetch(SALE_API_URL);
+                const banner = await response.json();
+
+                if (!banner) return;
+
+                const now = new Date();
+                const start = new Date(banner.startTime);
+                const end = new Date(banner.endTime);
+
+                // Only show if active or upcoming (if upcoming, maybe show "Starts In")
+                // For now, let's show if Active.
+                if (now >= start && now <= end) {
+                    const container = document.getElementById('saleBannerContainer');
+                    const img = document.getElementById('saleImage');
+                    const title = document.getElementById('saleTitle');
+                    const timer = document.getElementById('saleTimer');
+                    const link = document.getElementById('saleLink');
+
+                    img.src = `${SERVER_BASE}${banner.imageUrl}`;
+                    title.textContent = banner.title || 'Flash Sale';
+                    link.href = banner.link || '#';
+
+                    container.style.display = 'block';
+
+                    // Start Timer
+                    const interval = setInterval(() => {
+                        const currentTime = new Date();
+                        const diff = end - currentTime;
+
+                        if (diff <= 0) {
+                            clearInterval(interval);
+                            container.style.display = 'none'; // Hide when expired
+                            return;
+                        }
+
+                        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                        timer.textContent =
+                            `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    }, 1000);
+                }
+
+            } catch (error) {
+                console.error('Error loading sale banner:', error);
+            }
+        }
+
+    </script>
+</body>
+
+</html>
