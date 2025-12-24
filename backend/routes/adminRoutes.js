@@ -66,7 +66,7 @@ router.post('/create', adminController.createAdmin);
  *       500:
  *         description: Some server error
  */
-router.post('/login', adminController.loginAdmin);
+router.post('/login',(req,res,next)=>{console.log(req); next();}, adminController.loginAdmin);
 
 router.post('/logout', adminController.logoutAdmin);
 

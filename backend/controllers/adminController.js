@@ -28,6 +28,7 @@ exports.createAdmin = async (req, res) => {
 
 exports.loginAdmin = async (req, res) => {
     try {
+        console.log(req)
         const { identifier, password } = req.body; // identifier can be email or username
 
         // Find admin by email or username

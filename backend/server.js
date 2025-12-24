@@ -1,5 +1,4 @@
 const express = require('express');
-
 const cors = require('cors');
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -16,14 +15,13 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://localhost:3000'],
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://localhost:3000','*'],
     credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'adminFrontend'))); // Serve frontend files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded images
-
 // Database Connection
 const connectDB = require('./config/db');
 
