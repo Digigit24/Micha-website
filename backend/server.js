@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+
 const cors = require('cors');
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -25,9 +25,10 @@ app.use(express.static(path.join(__dirname, 'adminFrontend'))); // Serve fronten
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded images
 
 // Database Connection
-mongoose.connect('mongodb://localhost:27017/micha-website')
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
+const connectDB = require('./config/db');
+
+// Database Connection
+connectDB();
 
 // Swagger Configuration
 const options = {
